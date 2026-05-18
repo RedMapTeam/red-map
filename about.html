@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于我们 - 红色革命遗址叙事地图</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .about-container {
+            padding-top: 85px;
+            min-height: calc(100vh - 65px);
+            background: var(--bg-light);
+            padding-bottom: 80px;
+        }
+
+        .about-hero {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .about-hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .about-hero p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .about-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .section {
+            margin-bottom: 60px;
+        }
+
+        .section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            color: var(--text-dark);
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .section h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 24px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .section p {
+            color: var(--text-light);
+            line-height: 1.8;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .section img {
+            max-width: 100%;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .mission-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .mission-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .mission-card .icon {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .mission-card .icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .mission-card h3 {
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+
+        .mission-card p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .team-section {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .team-member {
+            text-align: center;
+        }
+
+        .team-member .avatar {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 15px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .team-member h4 {
+            margin-bottom: 5px;
+            color: var(--text-dark);
+        }
+
+        .team-member p {
+            color: var(--text-light);
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .contact-info {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .contact-item .icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(220, 38, 38, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            flex-shrink: 0;
+        }
+
+        .contact-item .icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .contact-item h4 {
+            margin-bottom: 5px;
+            color: var(--text-dark);
+        }
+
+        .contact-item p {
+            color: var(--text-light);
+            margin: 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span>红色革命遗址叙事地图</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="map.html">地图展示</a></li>
+                <li><a href="search.html">双轨检索</a></li>
+                <li><a href="about.html" class="active">关于我们</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="about-container">
+        <div class="about-hero">
+            <h1>关于我们</h1>
+            <p>传承红色基因，铭记革命历史</p>
+        </div>
+
+        <div class="about-content">
+            <div class="section">
+                <h2>项目简介</h2>
+                <p>红色革命遗址叙事地图是一个致力于记录、展示和传承中国革命历史的数字化平台。通过整合全国范围内的革命遗址资源，我们旨在打造一个集地图展示、信息检索、历史叙事于一体的综合性门户网站。</p>
+                <p>本项目由中国人民大学数字档案馆牵头开发，汇聚了历史学、地理学、计算机科学等多领域专家的智慧，力求为用户提供准确、全面、生动的革命历史信息服务。</p>
+                <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=red%20revolutionary%20museum%20interior%20with%20historical%20exhibits&image_size=landscape_16_9" alt="革命历史展览">
+            </div>
+
+            <div class="section">
+                <h2>我们的使命与愿景</h2>
+                <div class="mission-cards">
+                    <div class="mission-card">
+                        <div class="icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                            </svg>
+                        </div>
+                        <h3>传承红色基因</h3>
+                        <p>通过数字化手段，将革命历史遗产传承给下一代</p>
+                    </div>
+                    <div class="mission-card">
+                        <div class="icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7.5 18H4v-3.667L16.5 3.5z"></path>
+                            </svg>
+                        </div>
+                        <h3>弘扬革命精神</h3>
+                        <p>展现革命先烈的崇高精神和伟大事迹</p>
+                    </div>
+                    <div class="mission-card">
+                        <div class="icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <h3>服务社会公众</h3>
+                        <p>为研究者、教育者和普通公众提供便捷的历史查询服务</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>核心功能</h2>
+                <div class="mission-cards">
+                    <div class="mission-card">
+                        <div class="icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+                                <line x1="8" y1="2" x2="8" y2="18"></line>
+                                <line x1="16" y1="6" x2="16" y2="22"></line>
+                            </svg>
+                        </div>
+                        <h3>地图展示</h3>
+                        <p>交互式地图直观展示全国革命遗址分布</p>
+                    </div>
+                    <div class="mission-card">
+                        <div class="icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </div>
+                        <h3>双规检索</h3>
+                        <p>支持地域与时间双维度精准检索</p>
+                    </div>
+                    <div class="mission-card">
+                        <div class="icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <h3>遗址详情</h3>
+                        <p>详细展示每个遗址的历史背景与故事</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>开发团队</h2>
+                <div class="team-section">
+                    <div class="team-grid">
+                        <div class="team-member">
+                            <div class="avatar">覃</div>
+                            <h4>覃承华</h4>
+                            <p>网站制作-双规检索</p>
+                        </div>
+                        <div class="team-member">
+                            <div class="avatar">王</div>
+                            <h4>王心怡</h4>
+                            <p>网站制作-地图展示</p>
+                        </div>
+                        <div class="team-member">
+                            <div class="avatar">黄</div>
+                            <h4>黄昊</h4>
+                            <p>网站制作-遗址详情</p>
+                        </div>
+                        <div class="team-member">
+                            <div class="avatar">陈</div>
+                            <h4>陈萧</h4>
+                            <p>数据收集与清洗</p>
+                        </div>
+                        <div class="team-member">
+                            <div class="avatar">韩</div>
+                            <h4>韩佳轩</h4>
+                            <p>网站美化</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>联系我们</h2>
+                <div class="contact-info">
+                    <div class="contact-grid">
+                        <div class="contact-item">
+                            <div class="icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>邮箱</h4>
+                                <p>contact@redmap.com</p>
+                                <p>support@redmap.com</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 5a2 2 0 0 1 2-2h3.28a1 1 0 0 1 .948.684l1.498 4.493a1 1 0 0 1-.502 1.21l-2.257 1.13a11.042 11.042 0 0 0 5.516 5.516l1.13-2.257a1 1 0 0 1 1.21-.502l4.493 1.498a1 1 0 0 1 .684.949V19a2 2 0 0 1-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>电话</h4>
+                                <p>010-12345678</p>
+                                <p>010-87654321</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z"></path>
+                                    <path d="M15 11a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4>地址</h4>
+                                <p>北京市海淀区</p>
+                                <p>中国人民大学</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <div class="footer-logo">
+                        <span>红色革命遗址叙事地图</span>
+                    </div>
+                    <p>传承红色基因，铭记革命历史</p>
+                </div>
+                <div class="footer-links">
+                    <h4>快速链接</h4>
+                    <ul>
+                        <li><a href="index.html">首页</a></li>
+                        <li><a href="map.html">地图展示</a></li>
+                        <li><a href="search.html">双规检索</a></li>
+                        <li><a href="about.html">关于我们</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>联系我们</h4>
+                    <p>邮箱: contact@redmap.com</p>
+                    <p>电话: 010-12345678</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 红色革命遗址叙事地图. 版权所有.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

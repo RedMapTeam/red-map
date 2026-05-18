@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地图展示 - 红色革命遗址叙事地图</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { margin: 0; padding: 0; }
+        
+        .map-container {
+            display: flex;
+            height: calc(100vh - 65px);
+            padding-top: 65px;
+        }
+
+        .map-sidebar {
+            width: 340px;
+            background: #fff;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .sidebar-header h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.1rem;
+            color: #1f2937;
+        }
+
+        .filter-group {
+            margin-bottom: 15px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: #4b5563;
+        }
+
+        .filter-group select, .filter-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .site-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .site-item {
+            padding: 14px;
+            background: #f9fafb;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .site-item:hover {
+            background: #fff;
+            border-color: #dc2626;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15);
+        }
+
+        .site-item.active {
+            background: rgba(220, 38, 38, 0.08);
+            border-color: #dc2626;
+        }
+
+        .site-item h4 { margin: 0 0 5px 0; font-size: 0.95rem; color: #1f2937; }
+        .site-item p { margin: 0; font-size: 0.85rem; color: #6b7280; }
+
+        .site-item .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .site-item .tag {
+            padding: 3px 8px;
+            background: rgba(220, 38, 38, 0.1);
+            color: #dc2626;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .map-area {
+            flex: 1;
+            position: relative;
+            background: #f3f4f6;
+        }
+
+        #map-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        .map-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #6b7280;
+        }
+
+        .map-loading svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 15px;
+            animation: spin 2s linear infinite;
+            color: #dc2626;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .map-error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #6b7280;
+            padding: 30px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: #fff;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .legend h4 { margin: 0 0 10px 0; font-size: 0.9rem; color: #1f2937; }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .legend-dot.national { background: #dc2626; }
+        .legend-dot.provincial { background: #f97316; }
+        .legend-dot.city { background: #3b82f6; }
+
+        .info-window {
+            min-width: 280px;
+            padding: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .info-window-header {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: #fff;
+            padding: 15px;
+        }
+
+        .info-window-header h3 { margin: 0 0 5px 0; font-size: 1.1rem; }
+        .info-window-header p { margin: 0; font-size: 0.85rem; opacity: 0.9; }
+
+        .info-window-body { padding: 15px; }
+
+        .info-row {
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+        }
+
+        .info-label { color: #6b7280; margin-right: 8px; }
+        .info-value { color: #1f2937; }
+
+        .info-window-actions {
+            padding: 10px 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .info-window-btn {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #dc2626;
+            color: #fff;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .site-count {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .map-container { flex-direction: column; }
+            .map-sidebar {
+                width: 100%;
+                height: 45vh;
+                border-right: none;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            .legend { bottom: 10px; right: 10px; padding: 10px 15px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span>红色革命遗址叙事地图</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="map.html" class="active">地图展示</a></li>
+                <li><a href="search.html">双轨检索</a></li>
+                <li><a href="about.html">关于我们</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="map-container">
+        <div class="map-sidebar">
+            <div class="sidebar-header">
+                <h3>筛选条件</h3>
+                <div class="filter-group">
+                    <label>省份</label>
+                    <select id="province-select">
+                        <option value="">全部省份</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>遗址类型</label>
+                    <select id="type-select">
+                        <option value="">全部类型</option>
+                        <option value="革命旧址">革命旧址</option>
+                        <option value="领导人故居">领导人故居</option>
+                        <option value="会议旧址">会议旧址</option>
+                        <option value="战斗遗址">战斗遗址</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>搜索关键词</label>
+                    <input type="text" id="search-input" placeholder="输入遗址名称">
+                </div>
+            </div>
+            <div class="sidebar-content">
+                <div class="site-count" id="site-count">共 <span>0</span> 处遗址</div>
+                <ul class="site-list" id="site-list"></ul>
+            </div>
+        </div>
+
+        <div class="map-area">
+            <div id="map-container">
+                <div class="map-loading" id="map-loading">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 6v6l4 2"></path>
+                    </svg>
+                    <p>地图加载中...</p>
+                </div>
+            </div>
+
+            <div class="legend">
+                <h4>图例</h4>
+                <div class="legend-item"><span class="legend-dot national"></span><span>国家级</span></div>
+                <div class="legend-item"><span class="legend-dot provincial"></span><span>省级</span></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <div class="footer-logo">
+                        <span>红色革命遗址叙事地图</span>
+                    </div>
+                    <p>传承红色基因，铭记革命历史</p>
+                </div>
+                <div class="footer-links">
+                    <h4>快速链接</h4>
+                    <ul>
+                        <li><a href="index.html">首页</a></li>
+                        <li><a href="map.html">地图展示</a></li>
+                        <li><a href="search.html">双规检索</a></li>
+                        <li><a href="about.html">关于我们</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>联系我们</h4>
+                    <p>邮箱: contact@redmap.com</p>
+                    <p>电话: 010-12345678</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 红色革命遗址叙事地图. 版权所有.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://webapi.amap.com/maps?v=2.0&key=6b6ff9938a06c509bbc5a3e55a8af02b"></script>
+    <script>
+        var map, markers = [], siteData = [], currentInfoWindow = null;
+
+        function loadSiteData() {
+            fetch('red-sites.geojson')
+                .then(function(response) {
+                    if (!response.ok) throw new Error('网络请求失败');
+                    return response.json();
+                })
+                .then(function(data) {
+                    siteData = data.features;
+                    initMap();
+                    populateFilters();
+                    renderSiteList(siteData);
+                })
+                .catch(function(error) {
+                    console.error('加载GeoJSON失败:', error);
+                    loadMockData();
+                });
+        }
+
+        function loadMockData() {
+            siteData = [
+                {"type":"Feature","geometry":{"type":"Point","coordinates":[116.397428,39.90923]},"properties":{"基础信息":{"遗址ID":"R-001","遗址名称":"北京大学红楼","详细地址":"北京市东城区五四大街29号","遗址类型":"革命旧址","保护等级":"国家级","开放状态":"开放中"},"史实内容":{"历史背景与意义":"新文化运动和五四运动的标志性建筑"},"辅助信息":{"参观须知":{"开放时间":"周二至周日 09:00-16:00","联系电话":"010-52208900"}}}},
+                {"type":"Feature","geometry":{"type":"Point","coordinates":[121.4848,31.2268]},"properties":{"基础信息":{"遗址ID":"R-003","遗址名称":"中共一大会议旧址","详细地址":"上海市黄浦区兴业路76号","遗址类型":"会议旧址","保护等级":"国家级","开放状态":"开放中"},"史实内容":{"历史背景与意义":"中国共产党的诞生地"},"辅助信息":{"参观须知":{"开放时间":"周二至周日 09:00-17:00","联系电话":"021-53832171"}}}},
+                {"type":"Feature","geometry":{"type":"Point","coordinates":[109.495,36.5965]},"properties":{"基础信息":{"遗址ID":"R-010","遗址名称":"延安革命遗址","详细地址":"陕西省延安市宝塔区","遗址类型":"革命旧址","保护等级":"国家级","开放状态":"开放中"},"史实内容":{"历史背景与意义":"中国革命的指导中心和战略总后方"},"辅助信息":{"参观须知":{"开放时间":"08:00-17:30","联系电话":"0911-8213199"}}}},
+                {"type":"Feature","geometry":{"type":"Point","coordinates":[114.1809,26.5695]},"properties":{"基础信息":{"遗址ID":"R-007","遗址名称":"井冈山革命遗址","详细地址":"江西省吉安市井冈山市","遗址类型":"革命旧址","保护等级":"国家级","开放状态":"开放中"},"史实内容":{"历史背景与意义":"中国革命的摇篮"},"辅助信息":{"参观须知":{"开放时间":"全天开放","联系电话":"暂无"}}}},
+                {"type":"Feature","geometry":{"type":"Point","coordinates":[106.9367,27.7047]},"properties":{"基础信息":{"遗址ID":"R-009","遗址名称":"遵义会议会址","详细地址":"贵州省遵义市红花岗区","遗址类型":"会议旧址","保护等级":"国家级","开放状态":"开放中"},"史实内容":{"历史背景与意义":"中国共产党历史上生死攸关的转折点"},"辅助信息":{"参观须知":{"开放时间":"08:30-17:00","联系电话":"0851-28235318"}}}},
+                {"type":"Feature","geometry":{"type":"Point","coordinates":[115.8976,28.6817]},"properties":{"基础信息":{"遗址ID":"R-005","遗址名称":"南昌八一起义纪念馆","详细地址":"江西省南昌市西湖区中山路380号","遗址类型":"革命旧址","保护等级":"国家级","开放状态":"开放中"},"史实内容":{"历史背景与意义":"打响了武装反抗国民党反动派的第一枪"},"辅助信息":{"参观须知":{"开放时间":"09:00-17:00","联系电话":"0791-86613806"}}}},
+                {"type":"Feature","geometry":{"type":"Point","coordinates":[112.5143,27.9192]},"properties":{"基础信息":{"遗址ID":"R-024","遗址名称":"韶山毛泽东同志故居","详细地址":"湖南省湘潭市韶山市","遗址类型":"领导人故居","保护等级":"国家级","开放状态":"开放中"},"史实内容":{"历史背景与意义":"毛泽东同志的诞生地"},"辅助信息":{"参观须知":{"开放时间":"08:00-17:30","联系电话":"0731-55653903"}}}},
+                {"type":"Feature","geometry":{"type":"Point","coordinates":[114.0028,38.2945]},"properties":{"基础信息":{"遗址ID":"R-015","遗址名称":"西柏坡中共中央旧址","详细地址":"河北省石家庄市平山县","遗址类型":"会议旧址","保护等级":"国家级","开放状态":"开放中"},"史实内容":{"历史背景与意义":"中国共产党进京赶考的出发地"},"辅助信息":{"参观须知":{"开放时间":"09:00-17:00","联系电话":"0311-82851365"}}}}
+            ];
+            initMap();
+            populateFilters();
+            renderSiteList(siteData);
+        }
+
+        function initMap() {
+            try {
+                document.getElementById('map-loading').style.display = 'none';
+                
+                map = new AMap.Map('map-container', {
+                    center: [116.397428, 39.90923],
+                    zoom: 5,
+                    viewMode: 'PC',
+                    mapStyle: 'amap://styles/normal',
+                    features: ['bg', 'road', 'building', 'point']
+                });
+
+                AMap.plugin(['AMap.Scale', 'AMap.ToolBar', 'AMap.MapType'], function() {
+                    map.addControl(new AMap.Scale());
+                    map.addControl(new AMap.ToolBar());
+                    map.addControl(new AMap.MapType({
+                        defaultType: 1,
+                        showTraffic: false,
+                        showRoad: true
+                    }));
+                });
+
+                addMarkers(siteData);
+                console.log('地图初始化成功');
+            } catch (e) {
+                console.error('地图初始化失败:', e);
+                document.getElementById('map-container').innerHTML = '<div class="map-error"><p>地图加载失败，请检查网络连接</p><p style="font-size:0.8rem;color:#9ca3af;margin-top:10px;">错误信息: ' + e.message + '</p></div>';
+            }
+        }
+
+        function addMarkers(sites) {
+            if (!map) return;
+            
+            markers.forEach(function(m) { map.remove(m); });
+            markers = [];
+
+            sites.forEach(function(site) {
+                var coord = site.geometry.coordinates;
+                var props = site.properties.基础信息;
+                
+                var marker = new AMap.Marker({
+                    position: coord,
+                    title: props.遗址名称,
+                    icon: getMarkerIcon(props.保护等级)
+                });
+
+                marker.on('click', function() { showInfoWindow(marker, site); });
+                markers.push(marker);
+            });
+
+            map.add(markers);
+        }
+
+        function getMarkerIcon(level) {
+            var color = level === '国家级' ? '#dc2626' : level === '省级' ? '#f97316' : level === '市级' ? '#3b82f6' : '#dc2626';
+            var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="6" fill="' + color + '" stroke="white" stroke-width="2"/></svg>';
+            return new AMap.Icon({
+                size: new AMap.Size(16, 16),
+                image: 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg))),
+                imageSize: new AMap.Size(16, 16)
+            });
+        }
+
+        function showInfoWindow(marker, site) {
+            var props = site.properties.基础信息;
+            var history = site.properties.史实内容;
+            var visit = site.properties.辅助信息?.参观须知;
+
+            var content = '<div class="info-window"><div class="info-window-header"><h3>' + props.遗址名称 + '</h3><p>' + props.详细地址 + '</p></div><div class="info-window-body"><div class="info-row"><span class="info-label">类型:</span><span class="info-value">' + props.遗址类型 + '</span></div><div class="info-row"><span class="info-label">等级:</span><span class="info-value">' + props.保护等级 + '</span></div><div class="info-row"><span class="info-label">状态:</span><span class="info-value">' + props.开放状态 + '</span></div><div class="info-row"><span class="info-label">意义:</span><span class="info-value">' + (history?.历史背景与意义 || '暂无') + '</span></div>';
+            
+            if (visit) {
+                content += '<div class="info-row"><span class="info-label">时间:</span><span class="info-value">' + visit.开放时间 + '</span></div><div class="info-row"><span class="info-label">电话:</span><span class="info-value">' + (visit.联系电话 || '暂无') + '</span></div>';
+            }
+            
+            content += '</div><div class="info-window-actions"><a href="site-detail.html?id=' + props.遗址ID + '" class="info-window-btn">查看详情</a></div></div>';
+
+            if (currentInfoWindow) currentInfoWindow.close();
+            
+            currentInfoWindow = new AMap.InfoWindow({
+                content: content,
+                offset: new AMap.Pixel(0, -30)
+            });
+            
+            currentInfoWindow.open(map, marker.getPosition());
+        }
+
+        function populateFilters() {
+            var provinces = [];
+            siteData.forEach(function(site) {
+                var addr = site.properties.基础信息.详细地址;
+                var match = addr.match(/([\u4e00-\u9fa5]+省|北京市|天津市|上海市|重庆市)/);
+                var province = match ? match[1] : '未知';
+                if (provinces.indexOf(province) === -1) provinces.push(province);
+            });
+            provinces.sort();
+
+            var select = document.getElementById('province-select');
+            provinces.forEach(function(p) {
+                var opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderSiteList(sites) {
+            var list = document.getElementById('site-list');
+            var count = document.getElementById('site-count');
+            
+            count.innerHTML = '共 <span>' + sites.length + '</span> 处遗址';
+            list.innerHTML = '';
+
+            sites.forEach(function(site) {
+                var props = site.properties.基础信息;
+                var li = document.createElement('li');
+                li.className = 'site-item';
+                li.dataset.id = props.遗址ID;
+                li.innerHTML = '<h4>' + props.遗址名称 + '</h4><p>' + props.详细地址 + '</p><div class="tags"><span class="tag">' + props.遗址类型 + '</span><span class="tag">' + props.保护等级 + '</span></div>';
+                
+                li.addEventListener('click', function() {
+                    document.querySelectorAll('.site-item').forEach(function(item) { item.classList.remove('active'); });
+                    li.classList.add('active');
+                    locateSite(site);
+                });
+                
+                list.appendChild(li);
+            });
+        }
+
+        function locateSite(site) {
+            if (!map) return;
+            var coord = site.geometry.coordinates;
+            
+            markers.forEach(function(m) {
+                if (m.getPosition().toString() === new AMap.LngLat(coord[0], coord[1]).toString()) {
+                    m.emit('click');
+                }
+            });
+        }
+
+        function filterSites() {
+            var province = document.getElementById('province-select').value;
+            var type = document.getElementById('type-select').value;
+            var keyword = document.getElementById('search-input').value.toLowerCase();
+
+            var filtered = siteData.filter(function(site) {
+                var props = site.properties.基础信息;
+                var matchProvince = !province || props.详细地址.includes(province);
+                var matchType = !type || props.遗址类型 === type;
+                var matchKeyword = !keyword || props.遗址名称.toLowerCase().includes(keyword);
+                return matchProvince && matchType && matchKeyword;
+            });
+
+            renderSiteList(filtered);
+            addMarkers(filtered);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSiteData();
+            
+            document.getElementById('province-select').addEventListener('change', filterSites);
+            document.getElementById('type-select').addEventListener('change', filterSites);
+            document.getElementById('search-input').addEventListener('input', filterSites);
+        });
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
