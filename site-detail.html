@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遗址详情 - 红色革命遗址叙事地图</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: #f6f2ec;
+        }
+
+        .detail-shell {
+            padding-top: 65px;
+            min-height: 100vh;
+        }
+
+        .detail-hero {
+            position: relative;
+            min-height: 430px;
+            display: flex;
+            align-items: end;
+            overflow: hidden;
+            color: #fff;
+            background: #5f1515 url('index_background.png') center / cover no-repeat;
+        }
+
+        .detail-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(36, 10, 10, 0.9), rgba(94, 16, 16, 0.68), rgba(94, 16, 16, 0.18)),
+                linear-gradient(0deg, rgba(20, 10, 7, 0.72), rgba(20, 10, 7, 0.12) 55%);
+        }
+
+        .detail-hero-inner {
+            position: relative;
+            width: min(1180px, calc(100% - 40px));
+            margin: 0 auto;
+            padding: 72px 0 58px;
+        }
+
+        .breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 22px;
+            font-size: 0.92rem;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        .breadcrumb a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+        }
+
+        .detail-hero h1 {
+            max-width: 880px;
+            font-size: clamp(2.2rem, 5vw, 4.6rem);
+            line-height: 1.05;
+            margin-bottom: 18px;
+            letter-spacing: 0;
+        }
+
+        .detail-summary {
+            max-width: 760px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.08rem;
+            line-height: 1.8;
+        }
+
+        .detail-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 28px;
+        }
+
+        .detail-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 34px;
+            padding: 7px 13px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            color: #fff;
+            font-size: 0.9rem;
+            backdrop-filter: blur(8px);
+        }
+
+        .detail-main {
+            width: min(1180px, calc(100% - 40px));
+            margin: -34px auto 0;
+            position: relative;
+            z-index: 2;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 350px;
+            gap: 26px;
+            padding-bottom: 72px;
+        }
+
+        .detail-panel,
+        .side-panel {
+            background: #fff;
+            border: 1px solid rgba(117, 45, 32, 0.08);
+            border-radius: 14px;
+            box-shadow: 0 18px 45px rgba(73, 31, 25, 0.08);
+        }
+
+        .detail-panel {
+            padding: 34px;
+        }
+
+        .detail-section + .detail-section {
+            margin-top: 34px;
+            padding-top: 30px;
+            border-top: 1px solid #eee5dc;
+        }
+
+        .section-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            font-size: 0.86rem;
+            font-weight: 700;
+        }
+
+        .section-kicker::before {
+            content: '';
+            width: 22px;
+            height: 2px;
+            background: var(--primary-color);
+        }
+
+        .detail-section h2 {
+            font-size: 1.55rem;
+            margin-bottom: 15px;
+            color: #241615;
+        }
+
+        .detail-section p {
+            color: #4b3c38;
+            line-height: 1.9;
+        }
+
+        .event-card {
+            padding: 22px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #fff8f0, #fff);
+            border: 1px solid #f1dfce;
+        }
+
+        .image-feature {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(220px, 0.8fr);
+            gap: 16px;
+        }
+
+        .site-photo {
+            min-height: 320px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #eee1d5;
+            border: 1px solid #eadacf;
+            box-shadow: 0 14px 30px rgba(73, 31, 25, 0.08);
+        }
+
+        .site-photo img,
+        .photo-tile img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+        }
+
+        .photo-stack {
+            display: grid;
+            gap: 16px;
+        }
+
+        .photo-tile {
+            min-height: 152px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #eee1d5;
+            border: 1px solid #eadacf;
+        }
+
+        .event-card h3 {
+            color: #2b1d1a;
+            margin-bottom: 10px;
+        }
+
+        .time-ribbon {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--primary-dark);
+            font-weight: 700;
+            font-size: 0.88rem;
+        }
+
+        .people-grid,
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+        }
+
+        .person-card,
+        .related-card {
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid #eee5dc;
+            background: #fffdfb;
+        }
+
+        .person-card h3,
+        .related-card h3 {
+            font-size: 1rem;
+            color: #241615;
+            margin-bottom: 6px;
+        }
+
+        .person-card .role,
+        .related-card .meta {
+            color: var(--primary-color);
+            font-size: 0.86rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .related-card {
+            text-decoration: none;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .related-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(220, 38, 38, 0.35);
+            box-shadow: 0 10px 24px rgba(87, 34, 27, 0.09);
+        }
+
+        .side-column {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .side-panel {
+            padding: 22px;
+        }
+
+        .side-panel h2 {
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            color: #241615;
+        }
+
+        .info-list {
+            display: grid;
+            gap: 14px;
+        }
+
+        .info-item {
+            padding-bottom: 14px;
+            border-bottom: 1px solid #f0e6dc;
+        }
+
+        .info-item:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .info-label {
+            color: #8a746d;
+            font-size: 0.82rem;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            color: #2b1d1a;
+            font-weight: 650;
+            line-height: 1.65;
+        }
+
+        .action-stack {
+            display: grid;
+            gap: 10px;
+        }
+
+        .detail-action {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            background: #fff;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+
+        .detail-action.primary {
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        }
+
+        .detail-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(220, 38, 38, 0.18);
+        }
+
+        .mini-map {
+            height: 170px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            background:
+                linear-gradient(135deg, rgba(220, 38, 38, 0.16), rgba(30, 64, 175, 0.1)),
+                radial-gradient(circle at 68% 42%, #dc2626 0 6px, transparent 7px),
+                linear-gradient(90deg, rgba(255,255,255,0.38) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(255,255,255,0.38) 1px, transparent 1px),
+                #e9ddd1;
+            background-size: auto, auto, 28px 28px, 28px 28px, auto;
+            border: 1px solid #eadacf;
+        }
+
+        .mini-map::after {
+            content: attr(data-place);
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            bottom: 14px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: #2b1d1a;
+            background: rgba(255, 255, 255, 0.84);
+            font-weight: 700;
+            box-shadow: 0 8px 18px rgba(73, 31, 25, 0.08);
+        }
+
+        .empty-state {
+            padding: 140px 20px 100px;
+            min-height: 70vh;
+            text-align: center;
+            background: var(--bg-light);
+        }
+
+        .empty-state h1 {
+            margin-bottom: 12px;
+            color: var(--text-dark);
+        }
+
+        .empty-state p {
+            color: var(--text-light);
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 920px) {
+            .detail-main {
+                grid-template-columns: 1fr;
+            }
+
+            .side-column {
+                order: -1;
+            }
+
+            .image-feature {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .detail-hero {
+                min-height: 390px;
+            }
+
+            .detail-hero-inner,
+            .detail-main {
+                width: min(100% - 28px, 1180px);
+            }
+
+            .detail-panel,
+            .side-panel {
+                border-radius: 12px;
+                padding: 22px;
+            }
+
+            .detail-section h2 {
+                font-size: 1.32rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span>红色革命遗址叙事地图</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="map.html">地图展示</a></li>
+                <li><a href="search.html">双轨检索</a></li>
+                <li><a href="about.html">关于我们</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main id="detail-root" class="detail-shell">
+        <section class="empty-state">
+            <h1>遗址详情加载中...</h1>
+            <p>正在读取红色遗址项目数据</p>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <div class="footer-logo">
+                        <span>红色革命遗址叙事地图</span>
+                    </div>
+                    <p>传承红色基因，铭记革命历史</p>
+                </div>
+                <div class="footer-links">
+                    <h4>快速链接</h4>
+                    <ul>
+                        <li><a href="index.html">首页</a></li>
+                        <li><a href="map.html">地图展示</a></li>
+                        <li><a href="search.html">双轨检索</a></li>
+                        <li><a href="about.html">关于我们</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>联系我们</h4>
+                    <p>邮箱: contact@redmap.com</p>
+                    <p>电话: 010-12345678</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 红色革命遗址叙事地图. 版权所有.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="red-sites-data.js"></script>
+    <script>
+        const root = document.getElementById('detail-root');
+        const params = new URLSearchParams(window.location.search);
+        const requestedId = params.get('id');
+        const requestedName = params.get('name');
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function text(value, fallback = '暂无') {
+            if (value === null || value === undefined || value === '') return fallback;
+            if (String(value).trim() === '待补充') return fallback;
+            return String(value).trim();
+        }
+
+        function formatDate(value) {
+            const raw = text(value, '');
+            if (!raw) return '';
+            const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (match) {
+                return `${Number(match[1])}年${Number(match[2])}月${Number(match[3])}日`;
+            }
+            return raw;
+        }
+
+        function formatPeriod(time) {
+            const start = formatDate(time?.起始时间);
+            const end = formatDate(time?.结束时间);
+            if (start && end && start !== end) return `${start} 至 ${end}`;
+            return start || end || '时间待考';
+        }
+
+        function provinceOf(address) {
+            const addr = text(address, '');
+            const regions = [
+                ['广西壮族自治区', /^广西/],
+                ['西藏自治区', /^西藏/],
+                ['内蒙古自治区', /^内蒙古/],
+                ['宁夏回族自治区', /^宁夏/],
+                ['新疆维吾尔自治区', /^新疆/],
+                ['湖北省', /^(武汉市|黄冈市|孝感市|荆州市|宜昌市|襄阳市)/]
+            ];
+            const directRegion = regions.find(([, pattern]) => pattern.test(addr));
+            if (directRegion) return directRegion[0];
+
+            const match = addr.match(/([\u4e00-\u9fa5]+省|北京市|天津市|上海市|重庆市)/);
+            return match ? match[1] : '中国';
+        }
+
+        function hashText(value) {
+            return Array.from(String(value)).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+        }
+
+        const verifiedImagePools = {
+            meeting: ['site-images/site-congress.jpg', 'site-images/site-meeting.jpg', 'site-images/site-monument.jpg'],
+            memorial: ['site-images/site-meeting.jpg', 'site-images/site-monument.jpg', 'site-images/site-congress.jpg'],
+            residence: ['site-images/site-congress.jpg', 'site-images/site-meeting.jpg', 'site-images/site-monument.jpg'],
+            battlefield: ['site-images/site-monument.jpg', 'site-images/site-congress.jpg', 'site-images/site-meeting.jpg']
+        };
+
+        function getSiteImages(base) {
+            const name = base.遗址名称 || '';
+            const type = base.遗址类型 || '';
+            const specific = [
+                ['中国共产党第一次全国代表大会', verifiedImagePools.meeting.slice(0, 3)],
+                ['一大', verifiedImagePools.meeting.slice(0, 3)],
+                ['遵义', verifiedImagePools.meeting],
+                ['古田', verifiedImagePools.meeting],
+                ['延安', verifiedImagePools.memorial.slice(0, 3)],
+                ['南昌', verifiedImagePools.memorial],
+                ['井冈山', verifiedImagePools.battlefield],
+                ['韶山', verifiedImagePools.residence.slice(0, 3)],
+                ['毛泽东', verifiedImagePools.residence.slice(0, 3)]
+            ].find(([keyword]) => name.includes(keyword));
+
+            let files = specific?.[1];
+            if (!files || files.length === 0) {
+                if (type.includes('会议')) files = verifiedImagePools.meeting;
+                else if (type.includes('故居')) files = verifiedImagePools.residence;
+                else if (type.includes('战斗')) files = verifiedImagePools.battlefield;
+                else files = verifiedImagePools.memorial;
+            }
+
+            const offset = hashText(name) % files.length;
+            return [0, 1, 2].map(index => files[(offset + index) % files.length]);
+        }
+
+        function buildRelatedCards(site, allSites) {
+            const currentBase = site.properties.基础信息;
+            const currentType = currentBase.遗址类型;
+            const currentProvince = provinceOf(currentBase.详细地址);
+            const relatedIds = site.properties.辅助信息?.周边关联遗址 || [];
+            let related = relatedIds
+                .map(id => allSites.find(item => item.properties.基础信息.遗址ID === id))
+                .filter(Boolean)
+                .filter(item => provinceOf(item.properties.基础信息.详细地址) === currentProvince);
+
+            const sameProvinceSites = allSites
+                .filter(item => item !== site)
+                .filter(item => provinceOf(item.properties.基础信息.详细地址) === currentProvince);
+
+            if (related.length < 4) {
+                const supplements = sameProvinceSites
+                    .filter(item => !related.includes(item))
+                    .sort((a, b) => {
+                        const aTypeScore = a.properties.基础信息.遗址类型 === currentType ? 0 : 1;
+                        const bTypeScore = b.properties.基础信息.遗址类型 === currentType ? 0 : 1;
+                        return aTypeScore - bTypeScore;
+                    });
+
+                related = related.concat(supplements).slice(0, 4);
+            }
+
+            if (related.length === 0 && currentProvince !== '中国') {
+                related = allSites
+                    .filter(item => item !== site)
+                    .filter(item => provinceOf(item.properties.基础信息.详细地址) === currentProvince)
+                    .slice(0, 3);
+            }
+
+            return related.slice(0, 4).map(item => {
+                const base = item.properties.基础信息;
+                return `
+                    <a class="related-card" href="site-detail.html?id=${encodeURIComponent(base.遗址ID)}">
+                        <div class="meta">${escapeHtml(base.遗址类型)} · ${escapeHtml(base.保护等级)}</div>
+                        <h3>${escapeHtml(base.遗址名称)}</h3>
+                        <p>${escapeHtml(base.详细地址)}</p>
+                    </a>
+                `;
+            }).join('');
+        }
+
+        function renderDetail(site, allSites) {
+            const base = site.properties.基础信息;
+            const history = site.properties.史实内容 || {};
+            const event = history.关联历史事件 || {};
+            const visit = site.properties.辅助信息?.参观须知 || {};
+            const people = Array.isArray(history.关联人物) ? history.关联人物 : [];
+            const coords = site.geometry?.coordinates || [];
+            const province = provinceOf(base.详细地址);
+            const summary = text(history.历史背景与意义, '这里记录着中国革命历程中的重要片段，是理解地方红色记忆和革命精神传承的重要窗口。');
+            const period = formatPeriod(history.发生时间);
+            const amapUrl = coords.length === 2
+                ? `https://uri.amap.com/marker?position=${coords[0]},${coords[1]}&name=${encodeURIComponent(base.遗址名称)}`
+                : 'map.html';
+            const mapLink = coords.length === 2
+                ? `map.html?site=${encodeURIComponent(base.遗址ID)}`
+                : 'map.html';
+            const [mainImage, sceneImage, memoryImage] = getSiteImages(base);
+            const peopleHtml = people.length ? people.map(person => `
+                <article class="person-card">
+                    <div class="role">${escapeHtml(text(person.身份, '相关人物'))}</div>
+                    <h3>${escapeHtml(text(person.人物名称, '未命名人物'))}</h3>
+                    <p>${escapeHtml(text(person.事迹简介, '相关事迹待补充。'))}</p>
+                </article>
+            `).join('') : '<p>暂无明确关联人物记录，可结合地图与检索模块继续扩展。</p>';
+            const relatedHtml = buildRelatedCards(site, allSites) || '<p>暂无周边关联遗址记录。</p>';
+
+            document.title = `${base.遗址名称} - 遗址详情`;
+            root.innerHTML = `
+                <section class="detail-hero" style="background-image: url('${mainImage}'), url('index_background.png');">
+                    <div class="detail-hero-inner">
+                        <div class="breadcrumb">
+                            <a href="index.html">首页</a><span>/</span>
+                            <a href="map.html">地图展示</a><span>/</span>
+                            <span>遗址详情</span>
+                        </div>
+                        <h1>${escapeHtml(base.遗址名称)}</h1>
+                        <p class="detail-summary">${escapeHtml(summary)}</p>
+                        <div class="detail-tags">
+                            <span class="detail-tag">${escapeHtml(base.遗址ID)}</span>
+                            <span class="detail-tag">${escapeHtml(base.遗址类型)}</span>
+                            <span class="detail-tag">${escapeHtml(base.保护等级)}</span>
+                            <span class="detail-tag">${escapeHtml(base.开放状态)}</span>
+                            <span class="detail-tag">${escapeHtml(province)}</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="detail-main">
+                    <article class="detail-panel">
+                        <section class="detail-section">
+                            <div class="section-kicker">历史定位</div>
+                            <h2>遗址概览</h2>
+                            <p>${escapeHtml(summary)}</p>
+                        </section>
+
+                        <section class="detail-section">
+                            <div class="section-kicker">影像资料</div>
+                            <h2>遗址图像</h2>
+                            <div class="image-feature">
+                                <figure class="site-photo">
+                                    <img src="${mainImage}" alt="${escapeHtml(base.遗址名称)}遗址图像" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='index_background.png'">
+                                </figure>
+                                <div class="photo-stack">
+                                    <figure class="photo-tile">
+                                        <img src="${sceneImage}" alt="${escapeHtml(base.遗址名称)}相关遗址图像" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='index_background.png'">
+                                    </figure>
+                                    <figure class="photo-tile">
+                                        <img src="${memoryImage}" alt="${escapeHtml(base.遗址名称)}相关历史图像" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='index_background.png'">
+                                    </figure>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="detail-section">
+                            <div class="section-kicker">事件脉络</div>
+                            <h2>关联历史事件</h2>
+                            <div class="event-card">
+                                <div class="time-ribbon">${escapeHtml(period)}</div>
+                                <h3>${escapeHtml(text(event.事件名称, '相关历史事件待补充'))}</h3>
+                                <p>${escapeHtml(text(event.事件概述, '事件概述待补充。'))}</p>
+                            </div>
+                        </section>
+
+                        <section class="detail-section">
+                            <div class="section-kicker">人物记忆</div>
+                            <h2>关联人物</h2>
+                            <div class="people-grid">${peopleHtml}</div>
+                        </section>
+
+                        <section class="detail-section">
+                            <div class="section-kicker">延伸探索</div>
+                            <h2>周边关联遗址</h2>
+                            <div class="related-grid">${relatedHtml}</div>
+                        </section>
+                    </article>
+
+                    <aside class="side-column">
+                        <section class="side-panel">
+                            <h2>参观信息</h2>
+                            <div class="info-list">
+                                <div class="info-item">
+                                    <div class="info-label">详细地址</div>
+                                    <div class="info-value">${escapeHtml(base.详细地址)}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">开放时间</div>
+                                    <div class="info-value">${escapeHtml(text(visit.开放时间))}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">预约方式</div>
+                                    <div class="info-value">${escapeHtml(text(visit.预约方式))}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">联系电话</div>
+                                    <div class="info-value">${escapeHtml(text(visit.联系电话))}</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="side-panel">
+                            <h2>空间定位</h2>
+                            <div class="mini-map" data-place="${escapeHtml(base.遗址名称)}"></div>
+                            <div class="info-list" style="margin-top: 16px;">
+                                <div class="info-item">
+                                    <div class="info-label">经纬度</div>
+                                    <div class="info-value">${escapeHtml(text(base.经纬度坐标 || coords.join(', ')))}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">数据来源</div>
+                                    <div class="info-value">${escapeHtml(text(site.properties.辅助信息?.数据来源))}</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="side-panel">
+                            <h2>继续探索</h2>
+                            <div class="action-stack">
+                                <a class="detail-action primary" href="${mapLink}">在地图中查看</a>
+                                <a class="detail-action" href="${amapUrl}" target="_blank" rel="noopener">打开导航位置</a>
+                                <a class="detail-action" href="search.html">返回双轨检索</a>
+                            </div>
+                        </section>
+                    </aside>
+                </section>
+            `;
+        }
+
+        function renderError() {
+            root.innerHTML = `
+                <section class="empty-state">
+                    <h1>没有找到对应遗址</h1>
+                    <p>请从地图弹窗、检索结果或首页精选遗址重新进入详情页。</p>
+                    <a class="btn btn-primary" href="map.html">返回地图展示</a>
+                </section>
+            `;
+        }
+
+        function loadDetailData() {
+            if (window.RED_SITES_DATA) {
+                return Promise.resolve(window.RED_SITES_DATA);
+            }
+
+            return fetch('红色遗址项目/red-sites.geojson')
+                .then(response => {
+                    if (!response.ok) throw new Error('数据加载失败');
+                    return response.json();
+                });
+        }
+
+        loadDetailData()
+            .then(data => {
+                const sites = data.features || [];
+                const site = sites.find(item => item.properties.基础信息.遗址ID === requestedId)
+                    || sites.find(item => item.properties.基础信息.遗址名称 === requestedName)
+                    || sites[0];
+
+                if (!site) {
+                    renderError();
+                    return;
+                }
+
+                renderDetail(site, sites);
+            })
+            .catch(error => {
+                console.error(error);
+                renderError();
+            });
+    </script>
+</body>
+</html>
