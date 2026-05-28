@@ -57,7 +57,10 @@
             display: flex; gap: 20px; transition: all 0.3s; cursor: pointer;
         }
         .result-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); transform: translateY(-2px); }
-        .result-card img { width: 150px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: #f3f4f6; }
+        .result-card img { 
+            width: 150px; height: 100px; object-fit: cover; border-radius: 8px; 
+            flex-shrink: 0; background: #f3f4f6; 
+        }
         .result-info { flex: 1; }
         .result-info h3 { margin-bottom: 8px; color: #1f2937; font-size: 1.1rem; }
         .result-info .location { color: #6b7280; font-size: 0.9rem; margin-bottom: 8px; }
@@ -163,7 +166,6 @@
         
         function extractCity(address) {
             if (!address) return '';
-            // 优先匹配“XX市”
             const match = address.match(/([\u4e00-\u9fa5]{2,}市)/);
             if (match) return match[1];
             if (address.includes('北京')) return '北京市';
@@ -213,41 +215,34 @@
             };
         }
         
-        // ---------- 加载数据（优先 fetch GeoJSON，失败时提供更完整的 fallback 提示 + 部分数据）----------
+        // ---------- 加载数据（优先 fetch GeoJSON）----------
         async function loadData() {
             const resultsList = document.getElementById('results-list');
             try {
-                // 尝试加载真实的 GeoJSON 文件
                 const response = await fetch('red-sites.geojson');
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const data = await response.json();
                 if (data.features && data.features.length) {
                     allSites = data.features.map(f => normalizeSite(f));
                     console.log(`✅ 成功加载 ${allSites.length} 条遗址数据`);
-                    // 加载成功后隐藏错误提示
-                    showSuccessMessage();
                 } else {
                     throw new Error('GeoJSON 无有效数据');
                 }
             } catch (err) {
-                console.warn('⚠️ 加载外部 GeoJSON 失败，可能原因：文件不存在、跨域限制或使用了 file:// 协议', err);
-                // 显示友好的错误提示，并提供内嵌的示例数据让页面仍然可用
+                console.warn('⚠️ 加载外部 GeoJSON 失败，使用内嵌示例数据', err);
                 resultsList.innerHTML = `<div class="error-message">
-                    <strong>⚠️ 无法加载完整数据</strong><br>
-                    可能原因：您直接打开了 HTML 文件（file:// 协议）或被浏览器安全策略阻止。<br>
-                    请尝试使用本地 Web 服务器运行（例如 VS Code Live Server、python -m http.server）。<br>
-                    当前显示为部分示例数据，部分筛选功能受限。
+                    <strong>⚠️ 提示</strong><br>
+                    使用演示数据运行，完整数据需通过本地服务器访问。<br>
+                    遗址图片将按实际文件名显示。
                 </div>`;
-                // 仅加载少量示例数据，保证基本检索功能可用（不从远程加载，避免无数据空白）
                 loadFallbackMockData();
                 return;
             }
-            // 正常初始化界面
             initFilters();
             filterAndRender();
         }
         
-        // 备用模拟数据（确保搜索界面不会完全空白）
+        // 备用模拟数据（保证基础功能演示）
         function loadFallbackMockData() {
             const mockFeatures = [
                 {"properties": {"基础信息": {"遗址ID": "R-001", "遗址名称": "北京大学红楼", "详细地址": "北京市东城区五四大街29号", "遗址类型": "革命旧址", "保护等级": "国家级"}, "史实内容": {"发生时间": {"起始时间": "1918年"}, "历史背景与意义": "新文化运动和五四运动的标志性建筑。"}}},
@@ -259,15 +254,8 @@
             ];
             allSites = mockFeatures.map(f => normalizeSite({ type: "Feature", geometry: { coordinates: [0,0] }, properties: f.properties }));
             console.log(`📦 使用内嵌模拟数据 (${allSites.length} 条)`);
-            initFilters();        // 仍可初始化筛选下拉框
-            filterAndRender();    // 渲染结果
-        }
-        
-        function showSuccessMessage() {
-            const container = document.getElementById('results-list');
-            if (container && container.querySelector('.error-message')) {
-                // 如果之前有错误提示，清除并重新显示加载状态（会在渲染时被覆盖）
-            }
+            initFilters();
+            filterAndRender();
         }
         
         // ---------- UI 初始化 ----------
@@ -279,7 +267,6 @@
         
         function initFilters() {
             const provinceSel = document.getElementById('province-select');
-            // 清空原选项
             provinceSel.innerHTML = '<option value="">全部省份</option>';
             getAllProvinces().forEach(p => {
                 const opt = document.createElement('option');
@@ -297,7 +284,6 @@
                 typeSel.appendChild(opt);
             });
             
-            // 时间轴初始化
             const timelineDiv = document.getElementById('timeline-container');
             timelineDiv.innerHTML = '';
             periods.forEach(p => {
@@ -314,7 +300,6 @@
                 timelineDiv.appendChild(tag);
             });
             
-            // 绑定筛选监听
             provinceSel.addEventListener('change', () => {
                 updateCitySelect();
                 filterAndRender();
@@ -325,7 +310,6 @@
             document.getElementById('search-btn').addEventListener('click', () => filterAndRender());
             document.getElementById('sort-select').addEventListener('change', () => renderResults());
             
-            // 初始加载城市列表
             updateCitySelect();
         }
         
@@ -343,7 +327,6 @@
                 opt.textContent = c;
                 citySel.appendChild(opt);
             });
-            // 如果之前选的城市还在列表中则保留，否则置空
             if (currentCityValue && cities.includes(currentCityValue)) {
                 citySel.value = currentCityValue;
             } else {
@@ -369,6 +352,21 @@
             renderResults();
         }
         
+        // 根据遗址 ID 获取图片路径（只对 R-001 至 R-096 有实际图片）
+        function getImagePath(siteId) {
+            if (!siteId) return '';
+            // 匹配 R-001 到 R-096 格式的 ID
+            const match = siteId.match(/^R-0?(\d+)$/);
+            if (match) {
+                const num = parseInt(match[1], 10);
+                if (num >= 1 && num <= 96) {
+                    return `site-images/site-${siteId}.png`;
+                }
+            }
+            // 其他 ID 或超出范围返回空，将触发 fallback
+            return '';
+        }
+        
         function renderResults() {
             const sortBy = document.getElementById('sort-select').value;
             let toRender = [...filteredSites];
@@ -383,13 +381,17 @@
             
             container.innerHTML = '';
             toRender.forEach(site => {
-                // 使用一个更优雅的占位图（首字母背景图）
-                const imgUrl = `https://via.placeholder.com/150x100/DC2626/FFFFFF?text=${encodeURIComponent(site.name.charAt(0))}`;
+                const imgPath = getImagePath(site.id);
+                // 占位图：红色背景 + 遗址名称首字（清晰且美观）
+                const fallbackSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='100' viewBox='0 0 150 100'%3E%3Crect width='150' height='100' fill='%23dc2626'/%3E%3Ctext x='75' y='55' font-size='16' fill='white' text-anchor='middle' dominant-baseline='middle'%3E${escapeHtml(site.name.charAt(0))}%3C/text%3E%3C/svg%3E`;
+                // 如果想用纯灰色空白，可替换为：`data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='100' viewBox='0 0 150 100'%3E%3Crect width='150' height='100' fill='%23e5e7eb'/%3E%3C/svg%3E`
+                
                 const locationText = site.province + (site.city ? ' · ' + site.city : '');
                 const card = document.createElement('div');
                 card.className = 'result-card';
                 card.innerHTML = `
-                    <img src="${imgUrl}" alt="${escapeHtml(site.name)}" onerror="this.src='https://via.placeholder.com/150x100?text=遗址'">
+                    <img src="${imgPath || fallbackSvg}" alt="${escapeHtml(site.name)}" 
+                         onerror="this.onerror=null; this.src='${fallbackSvg}';">
                     <div class="result-info">
                         <h3>${escapeHtml(site.name)}</h3>
                         <div class="location">${escapeHtml(locationText)} · ${escapeHtml(site.address)}</div>
@@ -401,9 +403,9 @@
                         </div>
                     </div>
                 `;
+                // 点击跳转详情页
                 card.addEventListener('click', () => {
-                    // 跳转详情页（如果存在）
-                    window.location.href = `site-detail.html?id=${site.id}`;
+                    window.location.href = `site-detail.html?id=${encodeURIComponent(site.id)}`;
                 });
                 container.appendChild(card);
             });
@@ -411,7 +413,6 @@
         
         function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m; }); }
         
-        // 页面启动
         document.addEventListener('DOMContentLoaded', loadData);
     </script>
 </body>
