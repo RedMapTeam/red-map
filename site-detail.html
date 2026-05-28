@@ -161,6 +161,14 @@
             gap: 16px;
         }
 
+        .image-feature.single-image {
+            grid-template-columns: 1fr;
+        }
+
+        .image-feature.single-image .site-photo {
+            min-height: 380px;
+        }
+
         .site-photo {
             min-height: 320px;
             border-radius: 14px;
@@ -488,10 +496,19 @@
         function formatDate(value) {
             const raw = text(value, '');
             if (!raw) return '';
-            const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            // YYYY-MM-DD 或 YYYY-MM-DD HH:MM:SS
+            let match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
             if (match) {
-                return `${Number(match[1])}年${Number(match[2])}月${Number(match[3])}日`;
+                const y = Number(match[1]);
+                const m = Number(match[2]);
+                const d = Number(match[3]);
+                if (d === 1) return `${y}年${m}月`;
+                return `${y}年${m}月${d}日`;
             }
+            // YYYY-MM
+            match = raw.match(/^(\d{4})-(\d{2})$/);
+            if (match) return `${Number(match[1])}年${Number(match[2])}月`;
+            // YYYY年 或纯年份
             return raw;
         }
 
@@ -523,34 +540,49 @@
             return Array.from(String(value)).reduce((sum, char) => sum + char.charCodeAt(0), 0);
         }
 
-        const verifiedImagePools = {
+        const fallbackImagePools = {
             meeting: ['site-images/site-congress.jpg', 'site-images/site-meeting.jpg', 'site-images/site-monument.jpg'],
             memorial: ['site-images/site-meeting.jpg', 'site-images/site-monument.jpg', 'site-images/site-congress.jpg'],
             residence: ['site-images/site-congress.jpg', 'site-images/site-meeting.jpg', 'site-images/site-monument.jpg'],
             battlefield: ['site-images/site-monument.jpg', 'site-images/site-congress.jpg', 'site-images/site-meeting.jpg']
         };
 
+        function getSiteImageUrl(base) {
+            const siteId = base.遗址ID || '';
+            const numMatch = siteId.match(/^R-(\d+)$/);
+            if (numMatch) {
+                const num = parseInt(numMatch[1], 10);
+                if (num >= 1 && num <= 96) {
+                    return 'site-images/site-' + siteId + '.png';
+                }
+            }
+            return null;
+        }
+
         function getSiteImages(base) {
+            const specificUrl = getSiteImageUrl(base);
+            if (specificUrl) return [specificUrl];
+
             const name = base.遗址名称 || '';
             const type = base.遗址类型 || '';
             const specific = [
-                ['中国共产党第一次全国代表大会', verifiedImagePools.meeting.slice(0, 3)],
-                ['一大', verifiedImagePools.meeting.slice(0, 3)],
-                ['遵义', verifiedImagePools.meeting],
-                ['古田', verifiedImagePools.meeting],
-                ['延安', verifiedImagePools.memorial.slice(0, 3)],
-                ['南昌', verifiedImagePools.memorial],
-                ['井冈山', verifiedImagePools.battlefield],
-                ['韶山', verifiedImagePools.residence.slice(0, 3)],
-                ['毛泽东', verifiedImagePools.residence.slice(0, 3)]
+                ['中国共产党第一次全国代表大会', fallbackImagePools.meeting.slice(0, 3)],
+                ['一大', fallbackImagePools.meeting.slice(0, 3)],
+                ['遵义', fallbackImagePools.meeting],
+                ['古田', fallbackImagePools.meeting],
+                ['延安', fallbackImagePools.memorial.slice(0, 3)],
+                ['南昌', fallbackImagePools.memorial],
+                ['井冈山', fallbackImagePools.battlefield],
+                ['韶山', fallbackImagePools.residence.slice(0, 3)],
+                ['毛泽东', fallbackImagePools.residence.slice(0, 3)]
             ].find(([keyword]) => name.includes(keyword));
 
             let files = specific?.[1];
             if (!files || files.length === 0) {
-                if (type.includes('会议')) files = verifiedImagePools.meeting;
-                else if (type.includes('故居')) files = verifiedImagePools.residence;
-                else if (type.includes('战斗')) files = verifiedImagePools.battlefield;
-                else files = verifiedImagePools.memorial;
+                if (type.includes('会议')) files = fallbackImagePools.meeting;
+                else if (type.includes('故居')) files = fallbackImagePools.residence;
+                else if (type.includes('战斗')) files = fallbackImagePools.battlefield;
+                else files = fallbackImagePools.memorial;
             }
 
             const offset = hashText(name) % files.length;
@@ -618,7 +650,29 @@
             const mapLink = coords.length === 2
                 ? `map.html?site=${encodeURIComponent(base.遗址ID)}`
                 : 'map.html';
-            const [mainImage, sceneImage, memoryImage] = getSiteImages(base);
+            const siteImages = getSiteImages(base);
+            const heroBg = getSiteImageUrl(base) || 'index_background.png';
+            const hasOneImage = siteImages.length === 1;
+            const imageSectionHtml = hasOneImage
+                ? `<div class="image-feature single-image">
+                       <figure class="site-photo">
+                           <img src="${siteImages[0]}" alt="${escapeHtml(base.遗址名称)}遗址图像" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='index_background.png'">
+                       </figure>
+                   </div>`
+                : `<div class="image-feature">
+                       <figure class="site-photo">
+                           <img src="${siteImages[0]}" alt="${escapeHtml(base.遗址名称)}遗址图像" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='index_background.png'">
+                       </figure>
+                       <div class="photo-stack">
+                           <figure class="photo-tile">
+                               <img src="${siteImages[1]}" alt="${escapeHtml(base.遗址名称)}相关遗址图像" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='index_background.png'">
+                           </figure>
+                           <figure class="photo-tile">
+                               <img src="${siteImages[2]}" alt="${escapeHtml(base.遗址名称)}相关历史图像" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='index_background.png'">
+                           </figure>
+                       </div>
+                   </div>`;
+
             const peopleHtml = people.length ? people.map(person => `
                 <article class="person-card">
                     <div class="role">${escapeHtml(text(person.身份, '相关人物'))}</div>
@@ -630,7 +684,7 @@
 
             document.title = `${base.遗址名称} - 遗址详情`;
             root.innerHTML = `
-                <section class="detail-hero" style="background-image: url('${mainImage}'), url('index_background.png');">
+                <section class="detail-hero" style="background-image: url('${heroBg}'), url('index_background.png');">
                     <div class="detail-hero-inner">
                         <div class="breadcrumb">
                             <a href="index.html">首页</a><span>/</span>
@@ -660,19 +714,7 @@
                         <section class="detail-section">
                             <div class="section-kicker">影像资料</div>
                             <h2>遗址图像</h2>
-                            <div class="image-feature">
-                                <figure class="site-photo">
-                                    <img src="${mainImage}" alt="${escapeHtml(base.遗址名称)}遗址图像" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='index_background.png'">
-                                </figure>
-                                <div class="photo-stack">
-                                    <figure class="photo-tile">
-                                        <img src="${sceneImage}" alt="${escapeHtml(base.遗址名称)}相关遗址图像" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='index_background.png'">
-                                    </figure>
-                                    <figure class="photo-tile">
-                                        <img src="${memoryImage}" alt="${escapeHtml(base.遗址名称)}相关历史图像" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='index_background.png'">
-                                    </figure>
-                                </div>
-                            </div>
+                            ${imageSectionHtml}
                         </section>
 
                         <section class="detail-section">
