@@ -540,6 +540,17 @@
             return Array.from(String(value)).reduce((sum, char) => sum + char.charCodeAt(0), 0);
         }
 
+        function parseMediaUrls(mediaInfo) {
+            if (!mediaInfo || mediaInfo === '待补充') return [];
+            if (Array.isArray(mediaInfo)) {
+                return mediaInfo.filter(function (u) { return typeof u === 'string' && u.trim().length > 0 && /^https?:\/\//.test(u.trim()); });
+            }
+            if (typeof mediaInfo === 'string' && mediaInfo.trim() !== '待补充') {
+                return mediaInfo.split(',').map(function (u) { return u.trim(); }).filter(function (u) { return /^https?:\/\//.test(u); });
+            }
+            return [];
+        }
+
         const fallbackImagePools = {
             meeting: ['site-images/site-congress.jpg', 'site-images/site-meeting.jpg', 'site-images/site-monument.jpg'],
             memorial: ['site-images/site-meeting.jpg', 'site-images/site-monument.jpg', 'site-images/site-congress.jpg'],
@@ -547,7 +558,7 @@
             battlefield: ['site-images/site-monument.jpg', 'site-images/site-congress.jpg', 'site-images/site-meeting.jpg']
         };
 
-        function getSiteImageUrl(base) {
+        function getSiteImageUrl(base, mediaInfo) {
             const siteId = base.遗址ID || '';
             const numMatch = siteId.match(/^R-(\d+)$/);
             if (numMatch) {
@@ -556,12 +567,23 @@
                     return 'site-images/site-' + siteId + '.png';
                 }
             }
+            var externalUrls = parseMediaUrls(mediaInfo);
+            if (externalUrls.length > 0) return externalUrls[0];
+            // 尝试已下载的 jpg（下载脚本保存为此格式，onerror 兜底处理缺失文件）
+            if (!numMatch || parseInt(numMatch[1], 10) > 96) {
+                return 'site-images/site-' + siteId + '.jpg';
+            }
             return null;
         }
 
-        function getSiteImages(base) {
-            const specificUrl = getSiteImageUrl(base);
-            if (specificUrl) return [specificUrl];
+        function getSiteImages(base, mediaInfo) {
+            const specificUrl = getSiteImageUrl(base, mediaInfo);
+            if (specificUrl) {
+                if (specificUrl.startsWith('site-images/')) return [specificUrl];
+                var externalUrls = parseMediaUrls(mediaInfo);
+                if (externalUrls.length > 0) return externalUrls.slice(0, 3);
+                return [specificUrl];
+            }
 
             const name = base.遗址名称 || '';
             const type = base.遗址类型 || '';
@@ -650,8 +672,9 @@
             const mapLink = coords.length === 2
                 ? `map.html?site=${encodeURIComponent(base.遗址ID)}`
                 : 'map.html';
-            const siteImages = getSiteImages(base);
-            const heroBg = getSiteImageUrl(base) || 'index_background.png';
+            const mediaInfo = history.影像资料与链接;
+            const siteImages = getSiteImages(base, mediaInfo);
+            const heroBg = getSiteImageUrl(base, mediaInfo) || 'index_background.png';
             const hasOneImage = siteImages.length === 1;
             const imageSectionHtml = hasOneImage
                 ? `<div class="image-feature single-image">

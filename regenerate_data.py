@@ -126,7 +126,12 @@ for r in range(2, ws.max_row + 1):
     event_desc = str(cell(12) or '').strip()
     people_raw = cell(13)
     history_bg = str(cell(14) or '').strip()
-    media_link = str(cell(15) or '').strip()
+    media_link_raw = str(cell(15) or '').strip()
+    if media_link_raw in ('待补充', '—', 'None', ''):
+        media_link = '待补充'
+    else:
+        urls = [u.strip() for u in media_link_raw.split(',') if u.strip()]
+        media_link = urls if urls else '待补充'
     visit_open = str(cell(16) or '').strip()
     visit_booking = str(cell(17) or '').strip()
     visit_phone = str(cell(18) or '').strip()
