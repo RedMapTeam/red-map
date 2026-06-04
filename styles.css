@@ -130,19 +130,23 @@ body {
     position: relative;
     z-index: 1;
     text-align: center;
-    color: #D4AF37;
+    color: #b59d25;
     padding: 0 20px;
 }
 
 .hero-content h1 {
-    font-size: 3.5rem;
+    letter-spacing: 0.13em;
+    font-size: 4.5rem;
+    font-family: 'ZCOOL KuaiLe', cursive;
     font-weight: 800;
     margin-bottom: 20px;
-    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .hero-content p {
-    font-size: 1.3rem;
+    font-family: 'STKaiti', cursive;
+    font-weight: 600;
+    font-size: 1.4rem;
     margin-bottom: 40px;
     opacity: 0.9;
 }
@@ -259,9 +263,13 @@ body {
 .stat-item {
     text-align: center;
     color: white;
+    background: rgba(255,255,255,0.25); 
+     border-radius: 8px; 
+     padding: 24px 16px; 
 }
 
 .stat-number {
+    color: #ffffff;
     font-size: 3rem;
     font-weight: 800;
     margin-bottom: 10px;
@@ -446,3 +454,10 @@ body {
         font-size: 2rem;
     }
 }
+
+.retrieve-btn:hover {
+    background-color: #991b1b;
+    transform: scale(1.05);
+    transition: all 0.3s ease;
+}
+
