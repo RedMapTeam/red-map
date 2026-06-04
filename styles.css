@@ -454,8 +454,10 @@ body {
         font-size: 2rem;
     }
 }
+
 .retrieve-btn:hover {
     background-color: #991b1b;
     transform: scale(1.05);
     transition: all 0.3s ease;
 }
+
